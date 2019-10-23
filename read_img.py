@@ -6,12 +6,11 @@ import cv2
 
 
 gdal.UseExceptions()  # not required, but a good idea
-image = gdal.Open('planet_data/post_donnell_ps.tif', gdal.GA_ReadOnly)
-dem =  gdal.Open('planet_data/DEM_donnell.tif', gdal.GA_ReadOnly)
-classed =  gdal.Open('planet_data/landcover_post_donnell.tif', gdal.GA_ReadOnly)
-demArray = dem.ReadAsArray()
-classedArray = classed.ReadAsArray()
-data = image.ReadAsArray()
+image = gdal.Open('planet_data/pre_ndvi.tif', gdal.GA_ReadOnly)
+ndvi_post =  gdal.Open('planet_data/post_ndvi.tif', gdal.GA_ReadOnly).ReadAsArray()
+land_classed =  gdal.Open('planet_data/donnell_classified.tif', gdal.GA_ReadOnly).ReadAsArray()
+ndvi_pre = image.ReadAsArray()
+
 
 
 
@@ -25,15 +24,17 @@ def ndvi(img):
 
 
 
-def array_to_raster(array, classedArray, demArray, image):
+def array_to_raster(array,ndvi_post,land_classed, image):
     """Array > Raster
     Save a raster from a C order array.
 
     :param array: ndarray
     """
-    dst_filename = 'stacked_post.tif'
+    dst_filename = 'nnet_training.tif'
 
-    output_array = [array[0],array[1],array[2],array[3],demArray.astype('uint16'),classedArray.astype('uint16')]
+    land_classed[land_classed < 0] ='nan'
+    print(land_classed)
+    output_array = [array[0],ndvi_post,land_classed]
 
     print(output_array)
 
@@ -48,7 +49,7 @@ def array_to_raster(array, classedArray, demArray, image):
         x_pixels,
         y_pixels,
         len(output_array),
-        gdal.GDT_Int16)
+        gdal.GDT_Float64)
 
     dataset.SetGeoTransform(image.GetGeoTransform())
 
@@ -61,6 +62,8 @@ def array_to_raster(array, classedArray, demArray, image):
     return "it prints"#dataset, dataset.GetRasterBand(1)  #If you need to return, remenber to return  also the dataset because the band don`t live without dataset.
 
 
+
+
 def gaussian_blur(file):
     print(file[1000])
     blurred = cv2.GaussianBlur(file, (21,21),0)
@@ -70,7 +73,7 @@ def gaussian_blur(file):
 
 
 
-print(array_to_raster(data,classedArray,demArray, image))
+print(array_to_raster([ndvi_pre],ndvi_post,land_classed, image))
 
 
 

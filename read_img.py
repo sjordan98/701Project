@@ -10,12 +10,12 @@ import cv2
 gdal.UseExceptions()
 
 
-test_to_raster = False
-classified_array = 'planet_data/test.npy'
-aoi = 'planet_data/pre_ndvi.tif'
+test_to_raster = True
+classified_array = 'test2.npy'      #put the test dataset in
+aoi = 'planet_data/pre_ndvi.tif'    #the dataset that was trained on
 
 
-creating_test = True
+creating_test = False
 aoi_pre = 'planet_data/pre_donnell_ps.tif'
 aoi_post = 'planet_data/post_donnell_ps.tif'
 land_class = 'planet_data/donnell_classified.tif'
@@ -92,11 +92,11 @@ def output_to_array(chance_list):
             classed_list.append(3)
     print(len(classed_list))
 
-    width = 1113
+    width = 1122
 
     current_width = 0
     current_row = 0
-    output_array = np.arange(len(classed_list)).reshape(1354,1114)
+    output_array = np.arange(len(classed_list)).reshape(1373,1123)
     print(output_array.shape)
     for pixel in classed_list:
         output_array[current_row][current_width] = pixel
@@ -126,7 +126,7 @@ if test_to_raster == True:
     classed = np.load(classified_array)
     ref_image = gdal.Open(aoi, gdal.GA_ReadOnly)
     output_array = output_to_array(classed)
-    print(array_to_raster([output_array], ref_image))
+    print(array_to_raster([output_array], ref_image, "nnet_rgboutput.tif"))
 
 if creating_test == True:
     ref_image = gdal.Open(aoi_pre, gdal.GA_ReadOnly)
